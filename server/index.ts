@@ -16,28 +16,103 @@ const roomManager = new RoomManager();
 
 let usercount = 0;
 
-wss.on("connection", function connection(ws: ExtWebSocket) {
+wss.on("connection", (ws: ExtWebSocket) => {
   ws.on("error", console.error);
   ws.id = randomUUID();
   console.log("Connection established");
 
   userManager.addUser("user" + usercount++, ws);
 
-  ws.on("close", function close() {
+  try {
+    ws.on("message", (message: string) => {
+      const response = JSON.parse(message);
+
+      if (response.name) {
+        userManager.updateName(ws.id, response.name);
+      }
+
+      switch (response.type) {
+        case "createRoom": {
+          const roomID = roomManager.startNewRoom(
+            userManager.getUserById(ws.id)!
+          );
+          ws.send(
+            JSON.stringify({
+              status: "Room created",
+              roomID,
+              isPaired: false,
+            })
+          );
+          break;
+        }
+        case "joinRoom": {
+          const room = roomManager.getRoombyId(response.roomID);
+          if (room) {
+            const roomID = roomManager.createRoom(
+              room.id,
+              userManager.getUserById(ws.id)!
+            );
+            ws.send(
+              JSON.stringify({
+                status: "Room Joined",
+                roomID,
+                isPaired: true,
+              })
+            );
+          } else {
+            ws.send("Room not found");
+          }
+          break;
+        }
+        case "sendMessage": {
+          const room = roomManager.getRoombyId(response.roomID)!;
+          const sender = userManager.getUserById(ws.id)!;
+          const reciver = room.user1 === sender ? room.user2 : room.user1;
+          if (sender.isPaired && reciver.isPaired) {
+            reciver.socket.send(
+              JSON.stringify({
+                type: "receiveMessage",
+                message: response.message,
+                isPaired: true,
+              })
+            );
+          }
+          break;
+        }
+        default:
+          ws.send("Invalid request");
+          break;
+      }
+    });
+  } catch (e: any) {
+    console.log(e);
+    ws.send(JSON.stringify({ status: "Error", message: e.message }));
+  }
+
+  ws.on("close", () => {
     console.log("Connection closed");
-    userManager.removeUser(ws.id);
+    roomManager.removeRoombyUser(userManager.getUserById(ws.id)!);
+    userManager.removeUserByID(ws.id);
   });
 });
 
 // API Endpoints
 app.get("/users", (req, res) => {
-  console.log(new Date() + "Requesting users");
-  res.send(userManager.getUsers());
+  if (req.query.papa === "k") {
+    console.log(new Date() + "\tRequesting users");
+    res.send(userManager.getUsers());
+  } else {
+    res.send("Invalid request");
+  }
 });
 
 app.get("/rooms", (req, res) => {
-  console.log(new Date() + "Requesting rooms");
-  res.send(roomManager.getRooms());
+  if (req.query.papa === "k") {
+    console.log(new Date() + "\tRequesting rooms");
+    res.send(roomManager.getRooms());
+  } else {
+    res.send("Invalid request");
+  }
 });
 
 // Server listening

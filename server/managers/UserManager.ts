@@ -1,9 +1,10 @@
 import { ExtWebSocket } from "../types";
 
-type User = {
+export interface User {
   name: string;
   socket: ExtWebSocket;
-};
+  isPaired: boolean;
+}
 
 export class UserManager {
   private users: User[];
@@ -12,11 +13,30 @@ export class UserManager {
   }
 
   addUser(name: string, socket: ExtWebSocket) {
-    this.users.push({ name, socket });
+    this.users.push({ name, socket, isPaired: false });
   }
 
-  removeUser(socketID: string) {
+  removeUserByID(socketID: string) {
+    const user = this.users.find((user) => user.socket.id === socketID);
+    if (user) {
+      user.isPaired = false;
+    }
     this.users = this.users.filter((user) => user.socket.id !== socketID);
+  }
+
+  updateName(socketID: string, name: string) {
+    const user = this.users.find((user) => user.socket.id === socketID);
+    if (user) {
+      user.name = name;
+    }
+  }
+
+  getUserById(socketID: string) {
+    return this.users.find((user) => user.socket.id === socketID);
+  }
+
+  getUnpairedUser() {
+    return this.users.find((user) => !user.isPaired);
   }
 
   getUsers() {
