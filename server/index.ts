@@ -37,35 +37,35 @@ wss.on("connection", (ws: ExtWebSocket) => {
 
       switch (response.type) {
         case "createRoom": {
+          console.log(new Date() + ws.id + "\tCreating room");
           const roomID = roomManager.startNewRoom(
-            userManager.getUserById(ws.id)!,
+            userManager.getUserById(ws.id)!
           );
           ws.send(
             JSON.stringify({
               status: "Room created",
               roomID,
               isPaired: false,
-            }),
+            })
           );
           break;
         }
         case "joinRoom": {
-          console.log(new Date() + "\t from joinRoom:", response.roomID);
+          console.log(new Date() + ws.id + "\tJoining room");
           const room = roomManager.getRoombyId(response.roomID);
           if (room) {
             const roomID = roomManager.createRoom(
               room.id,
-              userManager.getUserById(ws.id)!,
+              userManager.getUserById(ws.id)!
             );
             ws.send(
               JSON.stringify({
                 status: "Room Joined",
                 roomID,
                 isPaired: true,
-              }),
+              })
             );
           } else {
-            console.log(new Date() + "\tUser 2 creating problems");
             ws.send("Room not found");
           }
           break;
@@ -74,13 +74,18 @@ wss.on("connection", (ws: ExtWebSocket) => {
           const room = roomManager.getRoombyId(response.roomID)!;
           const sender = userManager.getUserById(ws.id)!;
           const reciver = room.user1 === sender ? room.user2 : room.user1;
+
+          console.log(
+            new Date() + sender.name + "\tSending message to " + reciver.name
+          );
+          
           if (sender.isPaired && reciver.isPaired) {
             reciver.socket.send(
               JSON.stringify({
                 type: "receiveMessage",
                 message: response.message,
                 isPaired: true,
-              }),
+              })
             );
           }
           break;
@@ -102,26 +107,7 @@ wss.on("connection", (ws: ExtWebSocket) => {
   });
 });
 
-// API Endpoints
-app.get("/users", (req, res) => {
-  if (req.query.papa === "k") {
-    console.log(new Date() + "\tRequesting users");
-    res.send(userManager.getUsers());
-  } else {
-    res.send("Invalid request");
-  }
-});
-
-app.get("/rooms", (req, res) => {
-  if (req.query.papa === "k") {
-    console.log(new Date() + "\tRequesting rooms");
-    res.send(roomManager.getRooms());
-  } else {
-    res.send("Invalid request");
-  }
-});
-
 // Server listening
-server.listen(6969, () => {
-  console.log("Server is running on port 6969");
+server.listen(7860, () => {
+  console.log("Server is running on port 7860");
 });
