@@ -11,8 +11,8 @@ class Socket {
     this.roomID = null;
   }
 
-  connect(url: string) {
-    const socket = new WebSocket(url);
+  connect() {
+    const socket = new WebSocket(process.env.WEBSOCKET_URI || "");
     console.log("Connecting to WebSocket server...");
 
     this.socket = socket;

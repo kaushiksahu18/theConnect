@@ -30,7 +30,7 @@ function LobbyPage() {
       setClickSide("join");
     }
 
-    const socketObj = Socket.connect("ws://localhost:6969");
+    const socketObj = Socket.connect();
     socket.current = socketObj.getSocket();
 
     if (socket.current) {
