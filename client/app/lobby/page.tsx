@@ -1,28 +1,91 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MoveRight, ChevronsLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SocketContext } from "@/lib/SocketContext";
+import { useContext } from "react";
 
 function LobbyPage() {
   const [hoveredSide, setHoveredSide] = useState<"create" | "join" | null>(
     null,
   );
   const [clickSide, setClickSide] = useState<"create" | "join" | null>(null);
+  const [username, setUsername] = useState("");
+
+  const [roomID, setRoomID] = useState("");
+  const [status, setStatus] = useState("");
+
+  const Socket = useContext(SocketContext);
+  const socket = useRef<null | WebSocket>(null);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("join") && searchParams.get("join") !== "true") {
+      setClickSide("join");
+    }
+
+    const socketObj = Socket.connect("ws://localhost:6969");
+    socket.current = socketObj.getSocket();
+
+    if (socket.current) {
+      socket.current.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data) {
+          setStatus(data.status);
+          setRoomID(data.roomID);
+        }
+
+        if (data.isPaired === true) {
+          socketObj.setRoomID(data.roomID);
+          switch (data.status) {
+            case "They Joined":
+              router.push("/room?create=true");
+              break;
+            case "Room Joined":
+              router.push("/room?join=true");
+              break;
+          }
+        }
+      };
+    }
+  }, []);
 
   const handleClick = (action: "create" | "join") => {
     setClickSide(action);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("submit");
+    setClickSide("create");
+    socket.current?.send(
+      JSON.stringify({ type: "createRoom", name: username }),
+    );
+    console.log("created");
+  };
+
+  const handleJoinSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setClickSide("join");
+    if (searchParams.get("join") !== "true") {
+      socket.current?.send(
+        JSON.stringify({
+          type: "joinRoom",
+          name: username,
+          roomID: searchParams.get("join"),
+        }),
+      );
+    } else {
+      socket.current?.send(
+        JSON.stringify({ type: "joinRoom", name: username, roomID: roomID }),
+      );
+    }
+    console.log("joined");
   };
 
   return (
@@ -56,16 +119,57 @@ function LobbyPage() {
               <MoveRight className="h-5 w-5" />
             </motion.div>
           </motion.div>
+        ) : clickSide === "create" && status !== "Room created" ? (
+          <form
+            onSubmit={handleCreateSubmit}
+            className="flex flex-col items-center space-y-4 rounded-lg border-2 border-gray-300 p-6"
+          >
+            <div className="flex flex-col items-center space-x-4">
+              <Label htmlFor="username" className="text-2xl">
+                Username
+              </Label>
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="text-2xl"
+                id="username"
+                placeholder="Enter your username"
+              />
+            </div>
+            <Button size="lg" type="submit">
+              Create Room
+            </Button>
+          </form>
         ) : (
-          clickSide === "create" && (
-            <form onSubmit={handleSubmit} className="flex flex-col space-y-4 items-center border-2 border-gray-300 rounded-lg p-6">
-              <div className="flex flex-col space-x-4 items-center">
-                <Label htmlFor="username" className="text-2xl">Username</Label>
-                <Input className="text-2xl" id="username" placeholder="Enter your username" />
-              </div>
-              <Button size="lg" type="submit">Create Room</Button>
-            </form>
-          )
+          <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-col items-center space-x-4 space-y-4 rounded-lg border-2 border-gray-300 p-6">
+              <strong>Copy and share this ID with your PEER</strong>
+              <p>{roomID}</p>
+              <Button
+                size="lg"
+                type="submit"
+                onClick={async () =>
+                  await navigator.clipboard.writeText(roomID)
+                }
+              >
+                Copy RoomID
+              </Button>
+            </div>
+            <div className="flex flex-col items-center space-x-4 space-y-4 rounded-lg border-2 border-gray-300 p-6">
+              <strong>Or share this link with your PEER</strong>
+              <Button
+                size="lg"
+                type="submit"
+                onClick={async () =>
+                  await navigator.clipboard.writeText(
+                    `http://localhost:3000/lobby?join=${roomID}`,
+                  )
+                }
+              >
+                Copy Link
+              </Button>
+            </div>
+          </div>
         )}
       </motion.div>
       <motion.div
@@ -96,7 +200,42 @@ function LobbyPage() {
             </motion.div>
           </motion.div>
         ) : (
-          clickSide === "join" && <div>join</div>
+          clickSide === "join" && (
+            <form
+              onSubmit={handleJoinSubmit}
+              className="flex flex-col items-center space-y-4 rounded-lg border-2 border-gray-300 p-6"
+            >
+              <div className="flex flex-col items-center space-x-4">
+                <Label htmlFor="username" className="text-2xl">
+                  Username
+                </Label>
+                <Input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="text-2xl"
+                  id="username"
+                  placeholder="Enter your username"
+                />
+                {searchParams.get("join") === null && (
+                    <>
+                      <Label htmlFor="roomID" className="text-2xl">
+                        Room ID
+                      </Label>
+                      <Input
+                        value={roomID}
+                        onChange={(e) => setRoomID(e.target.value)}
+                        className="text-2xl"
+                        id="username"
+                        placeholder="Enter your username"
+                      />
+                    </>
+                  )}
+              </div>
+              <Button size="lg" type="submit">
+                Join Room
+              </Button>
+            </form>
+          )
         )}
       </motion.div>
       {clickSide !== null && (
