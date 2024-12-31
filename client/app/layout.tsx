@@ -30,9 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SocketContextProvider>
-          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-        </SocketContextProvider>
+        <Suspense fallback={<div>Loading...</div>}>
+          <SocketContextProvider>{children}</SocketContextProvider>
+        </Suspense>
       </body>
     </html>
   );
