@@ -48,7 +48,6 @@ class Socket {
   getSocket() {
     if (!this.socket) {
       console.log("WebSocket is not connected");
-      this.connect();
     }
     return this.socket;
   }
