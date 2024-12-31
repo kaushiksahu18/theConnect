@@ -162,7 +162,7 @@ function LobbyPage() {
                 type="submit"
                 onClick={async () =>
                   await navigator.clipboard.writeText(
-                    `${process.env.WEBSOCKET_URI || ""}/lobby?join=${roomID}`,
+                    `${window.location.href}?join=${roomID}`,
                   )
                 }
               >
@@ -217,19 +217,19 @@ function LobbyPage() {
                   placeholder="Enter your username"
                 />
                 {searchParams.get("join") === null && (
-                    <>
-                      <Label htmlFor="roomID" className="text-2xl">
-                        Room ID
-                      </Label>
-                      <Input
-                        value={roomID}
-                        onChange={(e) => setRoomID(e.target.value)}
-                        className="text-2xl"
-                        id="username"
-                        placeholder="Enter your username"
-                      />
-                    </>
-                  )}
+                  <>
+                    <Label htmlFor="roomID" className="text-2xl">
+                      Room ID
+                    </Label>
+                    <Input
+                      value={roomID}
+                      onChange={(e) => setRoomID(e.target.value)}
+                      className="text-2xl"
+                      id="username"
+                      placeholder="Enter your username"
+                    />
+                  </>
+                )}
               </div>
               <Button size="lg" type="submit">
                 Join Room

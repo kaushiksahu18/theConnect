@@ -35,10 +35,11 @@ function RoomPage() {
   // Send message to WebSocket server
   const sendMessage = () => {
     if (socket.current && newMessage.trim()) {
+      const date = new Date();
       socket.current.send(
         JSON.stringify({
           type: "sendMessage",
-          message: `${new Date().toString()} - ${newMessage.trim()}`,
+          message: `${newMessage.trim()} - ${date.toLocaleString("en-US", { month: "short" })} ${date.getDate()} ${date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`,
           roomID: socketObj.getRoomID(),
         }),
       );

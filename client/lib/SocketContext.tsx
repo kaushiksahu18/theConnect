@@ -2,6 +2,8 @@
 import React from "react";
 import { createContext } from "react";
 
+export const WEBSOCKET_URI = "wss://kaushiksahu-theconnect-backend-api-nodejs.hf.space";
+
 class Socket {
   private socket: WebSocket | null;
   private roomID: string | null;
@@ -12,7 +14,7 @@ class Socket {
   }
 
   connect() {
-    const socket = new WebSocket(process.env.WEBSOCKET_URI || "");
+    const socket = new WebSocket(WEBSOCKET_URI);
     console.log("Connecting to WebSocket server...");
 
     this.socket = socket;
