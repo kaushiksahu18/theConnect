@@ -28,7 +28,7 @@ export class RoomManager {
       room.user1.isPaired = true;
       room.user1.socket.send(
         JSON.stringify({
-          status: "Room created",
+          status: "They Joined",
           roomID: room.id,
           isPaired: true,
         })

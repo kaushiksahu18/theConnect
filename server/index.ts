@@ -17,9 +17,13 @@ const roomManager = new RoomManager();
 let usercount = 0;
 
 wss.on("connection", (ws: ExtWebSocket) => {
-  ws.on("error", console.error);
+  ws.on("error", (err) => {
+    console.log(new Date() + "\t" + err);
+    return;
+  });
+
   ws.id = randomUUID();
-  console.log("Connection established");
+  console.log(new Date() + "\tConnection established");
 
   userManager.addUser("user" + usercount++, ws);
 
@@ -34,32 +38,34 @@ wss.on("connection", (ws: ExtWebSocket) => {
       switch (response.type) {
         case "createRoom": {
           const roomID = roomManager.startNewRoom(
-            userManager.getUserById(ws.id)!
+            userManager.getUserById(ws.id)!,
           );
           ws.send(
             JSON.stringify({
               status: "Room created",
               roomID,
               isPaired: false,
-            })
+            }),
           );
           break;
         }
         case "joinRoom": {
+          console.log(new Date() + "\t from joinRoom:", response.roomID);
           const room = roomManager.getRoombyId(response.roomID);
           if (room) {
             const roomID = roomManager.createRoom(
               room.id,
-              userManager.getUserById(ws.id)!
+              userManager.getUserById(ws.id)!,
             );
             ws.send(
               JSON.stringify({
                 status: "Room Joined",
                 roomID,
                 isPaired: true,
-              })
+              }),
             );
           } else {
+            console.log(new Date() + "\tUser 2 creating problems");
             ws.send("Room not found");
           }
           break;
@@ -74,7 +80,7 @@ wss.on("connection", (ws: ExtWebSocket) => {
                 type: "receiveMessage",
                 message: response.message,
                 isPaired: true,
-              })
+              }),
             );
           }
           break;
@@ -85,12 +91,12 @@ wss.on("connection", (ws: ExtWebSocket) => {
       }
     });
   } catch (e: any) {
-    console.log(e);
+    console.log(new Date() + "\t" + e);
     ws.send(JSON.stringify({ status: "Error", message: e.message }));
   }
 
   ws.on("close", () => {
-    console.log("Connection closed");
+    console.log(new Date() + "\tConnection closed");
     roomManager.removeRoombyUser(userManager.getUserById(ws.id)!);
     userManager.removeUserByID(ws.id);
   });
@@ -116,6 +122,6 @@ app.get("/rooms", (req, res) => {
 });
 
 // Server listening
-server.listen(3000, () => {
-  console.log("Server is running on port 3000");
+server.listen(6969, () => {
+  console.log("Server is running on port 6969");
 });
