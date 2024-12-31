@@ -3,6 +3,7 @@ import React from "react";
 import { createContext } from "react";
 
 export const WEBSOCKET_URI = "wss://kaushiksahu-theconnect-backend-api-nodejs.hf.space";
+// export const WEBSOCKET_URI = "ws://localhost:7860";
 
 class Socket {
   private socket: WebSocket | null;
@@ -47,6 +48,7 @@ class Socket {
   getSocket() {
     if (!this.socket) {
       console.log("WebSocket is not connected");
+      this.connect();
     }
     return this.socket;
   }
