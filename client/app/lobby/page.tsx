@@ -162,7 +162,7 @@ function LobbyPage() {
                 type="submit"
                 onClick={async () =>
                   await navigator.clipboard.writeText(
-                    `http://localhost:3000/lobby?join=${roomID}`,
+                    `${process.env.WEBSOCKET_URI || ""}/lobby?join=${roomID}`,
                   )
                 }
               >
