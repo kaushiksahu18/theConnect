@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { SocketContextProvider } from "@/lib/SocketContext";
+import { Suspense } from "react";
 
 export default function RootLayout({
   children,
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SocketContextProvider>{children}</SocketContextProvider>
+        <SocketContextProvider>
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </SocketContextProvider>
       </body>
     </html>
   );
