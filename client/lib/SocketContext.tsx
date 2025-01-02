@@ -2,8 +2,8 @@
 import React from "react";
 import { createContext } from "react";
 
-// export const WEBSOCKET_URI = "wss://kaushiksahu-theconnect-backend-api-nodejs.hf.space";
-export const WEBSOCKET_URI = "ws://localhost:7860";
+export const WEBSOCKET_URI = "wss://kaushiksahu-theconnect-backend-api-nodejs.hf.space";
+// export const WEBSOCKET_URI = "ws://localhost:7860";
 
 class Socket {
   private socket: WebSocket | null;
