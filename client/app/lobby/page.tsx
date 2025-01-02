@@ -17,7 +17,7 @@ function LobbyPage() {
   const [clickSide, setClickSide] = useState<"create" | "join" | null>(null);
   const [username, setUsername] = useState("");
 
-  const [roomID, setRoomID] = useState("");
+  const roomID = useRef<string | null>(null);
   const [status, setStatus] = useState("");
 
   const Socket = useContext(SocketContext);
@@ -28,6 +28,7 @@ function LobbyPage() {
   useEffect(() => {
     if (searchParams.get("join") && searchParams.get("join") !== "true") {
       setClickSide("join");
+      roomID.current = searchParams.get("join");
     }
 
     const socketObj = Socket.connect();
@@ -35,10 +36,12 @@ function LobbyPage() {
 
     if (socket.current) {
       socket.current.onmessage = (event) => {
+        console.log(event.data);
         const data = JSON.parse(event.data);
+        console.log("Data:", data);
         if (data) {
           setStatus(data.status);
-          setRoomID(data.roomID);
+          roomID.current = data.roomID;
         }
 
         if (data.isPaired === true) {
@@ -72,19 +75,38 @@ function LobbyPage() {
   const handleJoinSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setClickSide("join");
-    if (searchParams.get("join") !== "true") {
+
+    console.log("joining data:", {
+      type: "joinRoom",
+      name: username,
+      roomID: roomID.current,
+    });
+
+    if (searchParams.get("join") && searchParams.get("join") !== "true") {
       socket.current?.send(
         JSON.stringify({
           type: "joinRoom",
           name: username,
-          roomID: searchParams.get("join"),
+          roomID: searchParams.get("join") || roomID.current,
         }),
       );
-    } else {
-      socket.current?.send(
-        JSON.stringify({ type: "joinRoom", name: username, roomID: roomID }),
-      );
+      console.log("joined");
+      return;
     }
+
+    console.log("joining data:", {
+      type: "joinRoom",
+      name: username,
+      roomID: roomID.current,
+    });
+
+    socket.current?.send(
+      JSON.stringify({
+        type: "joinRoom",
+        name: username,
+        roomID: roomID.current,
+      }),
+    );
     console.log("joined");
   };
 
@@ -144,12 +166,12 @@ function LobbyPage() {
           <div className="flex flex-col items-center space-y-4">
             <div className="flex flex-col items-center space-x-4 space-y-4 rounded-lg border-2 border-gray-300 p-6">
               <strong>Copy and share this ID with your PEER</strong>
-              <p>{roomID}</p>
+              <p>{roomID.current}</p>
               <Button
                 size="lg"
                 type="submit"
                 onClick={async () =>
-                  await navigator.clipboard.writeText(roomID)
+                  await navigator.clipboard.writeText(roomID.current!)
                 }
               >
                 Copy RoomID
@@ -162,7 +184,7 @@ function LobbyPage() {
                 type="submit"
                 onClick={async () =>
                   await navigator.clipboard.writeText(
-                    `${window.location.href}?join=${roomID}`,
+                    `${window.location.href}?join=${roomID.current}`,
                   )
                 }
               >
@@ -222,11 +244,13 @@ function LobbyPage() {
                       Room ID
                     </Label>
                     <Input
-                      value={roomID}
-                      onChange={(e) => setRoomID(e.target.value)}
+                      value={roomID.current!}
+                      onChange={(e) => {
+                        roomID.current = e.target.value;
+                      }}
                       className="text-2xl"
-                      id="username"
-                      placeholder="Enter your username"
+                      id="roomID"
+                      placeholder="Past your RoomID"
                     />
                   </>
                 )}

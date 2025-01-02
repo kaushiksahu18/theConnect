@@ -12,6 +12,7 @@ function RoomPage() {
   const [newMessage, setNewMessage] = useState(""); // Input field
   const Socket = useContext(SocketContext);
   let socketObj = Socket.getOBJ();
+  console.log(socketObj);
   const socket = useRef(socketObj.getSocket());
 
   useEffect(() => {
