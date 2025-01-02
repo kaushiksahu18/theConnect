@@ -11,11 +11,14 @@ function RoomPage() {
   const [messages, setMessages] = useState<string[]>([]); // Store chat messages
   const [newMessage, setNewMessage] = useState(""); // Input field
   const Socket = useContext(SocketContext);
-  let socketObj = Socket.getOBJ();
-  console.log(socketObj);
-  const socket = useRef(socketObj.getSocket());
+  const socket = useRef<null | WebSocket>(null);
+  const roomID = useRef<string | null>(null);
 
   useEffect(() => {
+    const socketObj = Socket.getOBJ();
+    socket.current = socketObj.getSocket();
+    roomID.current = socketObj.getRoomID();
+
     // Listen for incoming messages
     if (socket.current) {
       socket.current.onmessage = (event) => {
@@ -41,7 +44,7 @@ function RoomPage() {
         JSON.stringify({
           type: "sendMessage",
           message: `${newMessage.trim()} - ${date.toLocaleString("en-US", { month: "short" })} ${date.getDate()} ${date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`,
-          roomID: socketObj.getRoomID(),
+          roomID: roomID.current,
         }),
       );
       setNewMessage("");
