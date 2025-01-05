@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { SocketContext } from "@/lib/SocketContext";
-import { useContext } from "react";
+import { useSocketStore, WEBSOCKET_URI } from "@/lib/SocketContext";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,14 +9,13 @@ import { Button } from "@/components/ui/button";
 function RoomPage() {
   const [messages, setMessages] = useState<string[]>([]); // Store chat messages
   const [newMessage, setNewMessage] = useState(""); // Input field
-  const Socket = useContext(SocketContext);
+  const Socket = useSocketStore();
   const socket = useRef<null | WebSocket>(null);
   const roomID = useRef<string | null>(null);
 
   useEffect(() => {
-    const socketObj = Socket.getOBJ();
-    socket.current = socketObj.getSocket();
-    roomID.current = socketObj.getRoomID();
+    socket.current = Socket.getSocket();
+    roomID.current = Socket.getRoomID();
 
     // Listen for incoming messages
     if (socket.current) {

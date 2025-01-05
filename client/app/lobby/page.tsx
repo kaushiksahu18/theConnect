@@ -7,8 +7,7 @@ import { MoveRight, ChevronsLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { SocketContext } from "@/lib/SocketContext";
-import { useContext } from "react";
+import { useSocketStore, WEBSOCKET_URI } from "@/lib/SocketContext";
 
 function LobbyPage() {
   const [hoveredSide, setHoveredSide] = useState<"create" | "join" | null>(
@@ -20,19 +19,22 @@ function LobbyPage() {
   const roomID = useRef<string | null>(null);
   const [status, setStatus] = useState("");
 
-  const Socket = useContext(SocketContext);
+  const Socket = useSocketStore();
   const socket = useRef<null | WebSocket>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
+
   useEffect(() => {
+    Socket.setSocket(new WebSocket(WEBSOCKET_URI));
+
     if (searchParams.get("join") && searchParams.get("join") !== "true") {
       setClickSide("join");
       roomID.current = searchParams.get("join");
     }
 
-    const socketObj = Socket.connect();
-    socket.current = socketObj.getSocket();
+    socket.current = Socket.getSocket();
+    console.log("Socket:", Socket.getSocket());
 
     if (socket.current) {
       socket.current.onmessage = (event) => {
@@ -45,7 +47,7 @@ function LobbyPage() {
         }
 
         if (data.isPaired === true) {
-          socketObj.setRoomID(data.roomID);
+          Socket.setRoomID(data.roomID);
           switch (data.status) {
             case "They Joined":
               router.push("/room?create=true");
