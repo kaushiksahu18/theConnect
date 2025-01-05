@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useSocketStore, WEBSOCKET_URI } from "@/lib/SocketContext";
+import { useSocketStore } from "@/lib/SocketContext";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { MemoizedVortexBackground } from "@/components/VortexBackground";
 
 function RoomPage() {
   const [messages, setMessages] = useState<string[]>([]); // Store chat messages
@@ -20,9 +21,7 @@ function RoomPage() {
     // Listen for incoming messages
     if (socket.current) {
       socket.current.onmessage = (event) => {
-        console.log(event.data);
         const data = JSON.parse(event.data);
-        console.log(data);
 
         if (data && data.type === "receiveMessage") {
           setMessages((prevMessages: string[]) => [
@@ -50,26 +49,29 @@ function RoomPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
-      <h2>Chat</h2>
-      <div className="rounded-lg border-2 border-gray-300 p-2">
-        {messages.map((msg, index) => (
-          <div key={index}>{msg}</div>
-        ))}
-      </div>
+    <div className="relative h-screen w-full">
+      <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
+        <h2>Chat</h2>
+        <div className="rounded-lg border-2 border-gray-300 p-2">
+          {messages.map((msg, index) => (
+            <div key={index}>{msg}</div>
+          ))}
+        </div>
 
-      <div>
-        <Input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message"
-          className="w-full rounded-lg border-2 border-gray-300 p-2"
-        />
-        <Button onClick={sendMessage} className="w-full">
-          Send
-        </Button>
+        <div>
+          <Input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message"
+            className="w-full rounded-lg border-2 border-gray-300 p-2"
+          />
+          <Button onClick={sendMessage} className="w-full">
+            Send
+          </Button>
+        </div>
       </div>
+      <MemoizedVortexBackground className="absolute left-0 top-0 h-full w-full" />
     </div>
   );
 }

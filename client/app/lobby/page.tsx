@@ -34,13 +34,10 @@ function LobbyPage() {
     }
 
     socket.current = Socket.getSocket();
-    console.log("Socket:", Socket.getSocket());
 
     if (socket.current) {
       socket.current.onmessage = (event) => {
-        console.log(event.data);
         const data = JSON.parse(event.data);
-        console.log("Data:", data);
         if (data) {
           setStatus(data.status);
           roomID.current = data.roomID;
@@ -78,12 +75,6 @@ function LobbyPage() {
     e.preventDefault();
     setClickSide("join");
 
-    console.log("joining data:", {
-      type: "joinRoom",
-      name: username,
-      roomID: roomID.current,
-    });
-
     if (searchParams.get("join") && searchParams.get("join") !== "true") {
       socket.current?.send(
         JSON.stringify({
@@ -95,12 +86,6 @@ function LobbyPage() {
       console.log("joined");
       return;
     }
-
-    console.log("joining data:", {
-      type: "joinRoom",
-      name: username,
-      roomID: roomID.current,
-    });
 
     socket.current?.send(
       JSON.stringify({
