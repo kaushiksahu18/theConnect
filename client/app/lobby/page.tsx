@@ -251,7 +251,7 @@ function LobbyPage() {
       </motion.div>
       {clickSide !== null && (
         <Button
-          onClick={() => setClickSide(null)}
+          onClick={() => window.location.href = "/lobby"}
           className="absolute left-4 top-4 cursor-pointer space-x-2 text-xl text-white"
         >
           <ChevronsLeft />
