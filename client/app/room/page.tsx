@@ -23,7 +23,10 @@ function RoomPage() {
       socket.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        if (data && data.type === "receiveMessage") {
+        if (
+          data &&
+          (data.type === "receiveMessage" || data.type === "sentMessage")
+        ) {
           setMessages((prevMessages: string[]) => [
             ...prevMessages,
             data.message,
@@ -52,9 +55,21 @@ function RoomPage() {
     <div className="relative h-screen w-full">
       <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
         <h2>Chat</h2>
-        <div className="rounded-lg border-2 border-gray-300 p-2">
+        <div className="space-y-1 rounded-lg border-2 border-gray-300 p-2">
           {messages.map((msg, index) => (
-            <div key={index}>{msg}</div>
+            <div
+              className={`flex ${msg.substring(0, 2) === "s#" ? "justify-end" : "justify-start"}`}
+              key={index}
+            >
+              <p
+                className={`w-max rounded-full px-4 py-1 text-lg ${msg.substring(0, 2) === "s#" ? "bg-green-400 text-right text-white" : "bg-indigo-400 text-left text-white"}`}
+              >
+                {msg.substring(2).split("-")[0]}
+                <span className="text-xs text-gray-200">
+                  {msg.substring(2).split("-")[1]}
+                </span>
+              </p>
+            </div>
           ))}
         </div>
 

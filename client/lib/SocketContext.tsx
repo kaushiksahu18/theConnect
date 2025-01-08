@@ -2,9 +2,8 @@
 
 import { create } from "zustand";
 
-const WEBSOCKET_URI =
-  "wss://kaushiksahu-theconnect-backend-api-nodejs.hf.space";
-// const WEBSOCKET_URI = "ws://localhost:7860";
+// const WEBSOCKET_URI = "wss://kaushiksahu-theconnect-backend-api-nodejs.hf.space";
+const WEBSOCKET_URI = "ws://localhost:7860";
 
 interface Store {
   socket: WebSocket | null;
