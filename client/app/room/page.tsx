@@ -52,42 +52,44 @@ function RoomPage() {
   };
 
   return (
-    <div className="relative h-screen w-full">
-      <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
-        <h2>Chat</h2>
-        <div className="space-y-1 rounded-lg border-2 border-gray-300 p-2">
-          {messages.map((msg, index) => (
-            <div
-              className={`flex ${msg.substring(0, 2) === "s#" ? "justify-end" : "justify-start"}`}
-              key={index}
-            >
-              <p
-                className={`w-max rounded-full px-4 py-1 text-lg ${msg.substring(0, 2) === "s#" ? "bg-green-400 text-right text-white" : "bg-indigo-400 text-left text-white"}`}
+    <>
+      <MemoizedVortexBackground className="absolute left-0 top-0 h-full w-full" />
+      <div className="relative h-screen w-full">
+        <div className="mx-auto w-[95vw] lg:w-[70vw] space-y-8 px-4 py-8">
+          <h2>Chat</h2>
+          <div className="space-y-1 rounded-lg border-2 border-gray-300 p-2 overflow-y-auto max-h-[70vh]">
+            {messages.map((msg, index) => (
+              <div
+                className={`flex ${msg.substring(0, 2) === "s#" ? "justify-end" : "justify-start"}`}
+                key={index}
               >
-                {msg.substring(2).split("-")[0]}
-                <span className="text-xs text-gray-200">
-                  {msg.substring(2).split("-")[1]}
-                </span>
-              </p>
-            </div>
-          ))}
-        </div>
+                <p
+                  className={`w-max rounded-full px-4 py-1 text-lg ${msg.substring(0, 2) === "s#" ? "bg-green-400 text-right text-white" : "bg-indigo-400 text-left text-white"}`}
+                >
+                  {msg.substring(2).split("-")[0]}
+                  <span className="text-xs text-gray-200">
+                    {msg.substring(2).split("-")[1]}
+                  </span>
+                </p>
+              </div>
+            ))}
+          </div>
 
-        <div>
-          <Input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message"
-            className="w-full rounded-lg border-2 border-gray-300 p-2"
-          />
-          <Button onClick={sendMessage} className="w-full">
-            Send
-          </Button>
+          <div>
+            <Input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message"
+              className="w-full rounded-lg border-2 border-gray-300 p-2"
+            />
+            <Button onClick={sendMessage} className="w-full">
+              Send
+            </Button>
+          </div>
         </div>
       </div>
-      <MemoizedVortexBackground className="absolute left-0 top-0 h-full w-full" />
-    </div>
+    </>
   );
 }
 
